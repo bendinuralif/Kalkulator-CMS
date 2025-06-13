@@ -1,53 +1,58 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kalkulator Kredit CMS</title>
   <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f2f5;
-      margin: 0; padding: 0;
-    }
+    body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f0f2f5; }
     .container {
       max-width: 500px;
-      margin: 30px auto;
       background: white;
-      border-radius: 10px;
       padding: 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      margin: auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
-    h2 { text-align:center; color:#007BFF; margin-bottom:25px; }
-    label { font-weight:600; margin-bottom:5px; display:block; }
+    h2 { text-align: center; margin-bottom: 20px; }
+    label { margin-top: 10px; font-weight: bold; }
     input, select {
-      width:100%; padding:12px; margin-bottom:15px;
-      font-size:16px; border-radius:6px;
-      border:1px solid #ccc;
+      padding: 10px;
+      width: 100%;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
     }
     button {
-      width:100%; background:#007BFF; color:white;
-      padding:14px; font-size:16px;
-      border:none; border-radius:6px;
-      cursor:pointer; transition:background .3s;
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
     }
-    button:hover { background:#0056b3; }
     #result {
-      margin-top:20px; background:#f8f9fa;
-      border:1px solid #ddd; border-radius:6px;
-      padding:15px;
+      margin-top: 20px;
+      background: #e9ecef;
+      padding: 15px;
+      border-radius: 5px;
+      font-size: 14px;
     }
-    strong { color:#333; }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Kalkulator Kredit CMS</h2>
     <label for="otr">Harga OTR (Rp):</label>
-    <input type="text" id="otr" placeholder="20.560.000" value="20.560.000" oninput="formatRupiah(this)" />
+    <input type="text" id="otr" value="20560000" oninput="formatRupiah(this)">
+
     <label for="dp">DP Price List (Rp):</label>
-    <input type="text" id="dp" placeholder="5.000.000" value="5.000.000" oninput="formatRupiah(this)" />
+    <input type="text" id="dp" value="5000000" oninput="formatRupiah(this)">
+
     <label for="tenor">Pilih Tenor (bulan):</label>
     <select id="tenor">
       <option value="11">11</option>
@@ -56,66 +61,68 @@
       <option value="29">29</option>
       <option value="35" selected>35</option>
     </select>
+
     <button onclick="hitungAngsuran()">Hitung Angsuran</button>
+
     <div id="result"></div>
   </div>
 
-  <script>
-    function formatRupiah(input) {
-      let v = input.value.replace(/\D/g, '');
-      let s='', j=0;
-      for (let i=v.length-1; i>=0; i--, j++) {
-        s = v[i] + s;
-        if(j%3===2 && i!==0) s = '.' + s;
-      }
-      input.value = s;
-    }
+<script>
+function formatRupiah(el) {
+  let angka = el.value.replace(/\D/g, "");
+  el.value = new Intl.NumberFormat('id-ID').format(angka);
+}
 
-    function unformat(str) {
-      return parseInt(str.replace(/\./g,''))||0;
-    }
+function unformat(str) {
+  return parseInt(str.replace(/\./g, '')) || 0;
+}
 
-    function bulat5000(x) {
-      return Math.ceil(x/5000)*5000;
-    }
+function hitungAngsuran() {
+  const otr = unformat(document.getElementById('otr').value);
+  const dp = unformat(document.getElementById('dp').value);
+  const tenor = parseInt(document.getElementById('tenor').value);
 
-    function hitungAngsuran() {
-      const otr = unformat(document.getElementById('otr').value);
-      const dp  = unformat(document.getElementById('dp').value);
-      const tenor = parseInt(document.getElementById('tenor').value);
+  if (dp >= otr || dp <= 0 || otr <= 0) {
+    alert("Masukkan nilai OTR dan DP yang valid.");
+    return;
+  }
 
-      if(otr<=0||dp<=0||dp>=otr) {
-        alert('Masukkan OTR dan DP yang valid.');
-        return;
-      }
+  const netRate = {
+    11: 0.10701,
+    17: 0.07522,
+    23: 0.05882,
+    29: 0.05013,
+    35: 0.04466
+  }[tenor];
 
-      const pokok = otr - dp;
-      const faktor = {
-        11: 0.10701, 17: 0.07522, 23: 0.05882,
-        29: 0.05013, 35: 0.04466
-      };
+  const pokok = otr - dp;
+  const tingkatBunga = netRate; // karena jumlah angsuran = tenor (bulanan)
+  const bunga = pokok * tingkatBunga;
+  const administrasi = 250000;
+  const premiAsuransi = otr * 0.0061;
+  const pendapatanAsuransi = premiAsuransi * 0.25;
+  const pendapatan = bunga + administrasi + pendapatanAsuransi;
+  const maxTac = Math.floor((pendapatan * 0.175) / 1000) * 1000;
 
-      const fp = faktor[tenor];
-      if(!fp) {
-        document.getElementById('result').innerHTML = 'Faktor bunga belum tersedia.';
-        return;
-      }
+  const angsuran = Math.ceil(bunga / tenor / 5000) * 5000;
+  const totalCicilan = angsuran * tenor;
+  const totalBayar = totalCicilan + dp;
 
-      const angsuranAsli = pokok * fp;
-      const angsuranBulat = bulat5000(angsuranAsli);
-      const cicilan = angsuranBulat * tenor;
-      const totalBayar = cicilan + dp;
-      const maxTac = Math.round(pokok * 0.175);
+  document.getElementById('result').innerHTML = `
+    <strong>Hasil Simulasi:</strong><br>
+    Pokok Kredit: Rp${pokok.toLocaleString()}<br>
+    Tingkat Bunga: ${tingkatBunga.toFixed(5)}<br>
+    Bunga: Rp${Math.round(bunga).toLocaleString()}<br>
+    Administrasi: Rp${administrasi.toLocaleString()}<br>
+    Premi Asuransi: Rp${Math.round(premiAsuransi).toLocaleString()}<br>
+    Pendapatan: Rp${Math.round(pendapatan).toLocaleString()}<br>
+    <strong>Max TAC: Rp${maxTac.toLocaleString()}</strong><br><br>
+    Angsuran per bulan: <strong>Rp${angsuran.toLocaleString()}</strong><br>
+    Total Cicilan: Rp${totalCicilan.toLocaleString()}<br>
+    Total Bayar (DP + Cicilan): Rp${totalBayar.toLocaleString()}
+  `;
+}
+</script>
 
-      document.getElementById('result').innerHTML = `
-        <strong>Hasil Simulasi:</strong><br>
-        Pokok Kredit: Rp${pokok.toLocaleString('id-ID')}<br>
-        Angsuran/bln: <strong>Rp${angsuranBulat.toLocaleString('id-ID')}</strong><br>
-        Total Cicilan: Rp${cicilan.toLocaleString('id-ID')}<br>
-        Total Bayar: Rp${totalBayar.toLocaleString('id-ID')}<br>
-        Max TAC (Rp): <strong>Rp${maxTac.toLocaleString('id-ID')}</strong>
-      `;
-    }
-  </script>
 </body>
 </html>
