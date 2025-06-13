@@ -5,17 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Kalkulator Kredit CMS</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', sans-serif;
       background: #f0f2f5;
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
     }
-
     .container {
       max-width: 500px;
       margin: 30px auto;
@@ -24,19 +19,16 @@
       padding: 20px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
-
     h2 {
       text-align: center;
       color: #007BFF;
       margin-bottom: 25px;
     }
-
     label {
       font-weight: 600;
       margin-bottom: 5px;
       display: block;
     }
-
     input, select {
       width: 100%;
       padding: 12px;
@@ -45,7 +37,6 @@
       border-radius: 6px;
       border: 1px solid #ccc;
     }
-
     button {
       width: 100%;
       background-color: #007BFF;
@@ -57,11 +48,9 @@
       cursor: pointer;
       transition: background 0.3s ease;
     }
-
     button:hover {
       background-color: #0056b3;
     }
-
     #result {
       margin-top: 20px;
       background: #f8f9fa;
@@ -69,7 +58,6 @@
       border-radius: 6px;
       padding: 15px;
     }
-
     strong {
       color: #333;
     }
@@ -95,23 +83,32 @@
     <option value="35" selected>35</option>
   </select>
 
+  <label for="netRate">Net Rate (%):</label>
+  <select id="netRate">
+    <option value="24">24%</option>
+    <option value="24.5">24.5%</option>
+    <option value="25">25%</option>
+    <option value="25.5">25.5%</option>
+    <option value="26" selected>26%</option>
+    <option value="26.5">26.5%</option>
+    <option value="27">27%</option>
+    <option value="27.5">27.5%</option>
+    <option value="28">28%</option>
+  </select>
+
   <button onclick="hitungAngsuran()">Hitung Angsuran</button>
 
   <div id="result"></div>
 </div>
 
 <script>
-  // Format input angka ke format Rp
   function formatRupiah(input) {
     let value = input.value.replace(/\D/g, "");
     let formatted = "";
-    let length = value.length;
-
-    for (let i = length - 1, j = 1; i >= 0; i--, j++) {
+    for (let i = value.length - 1, j = 1; i >= 0; i--, j++) {
       formatted = value[i] + formatted;
       if (j % 3 === 0 && i !== 0) formatted = "." + formatted;
     }
-
     input.value = formatted;
   }
 
@@ -127,6 +124,7 @@
     const otr = unformatRupiah(document.getElementById('otr').value);
     const dp = unformatRupiah(document.getElementById('dp').value);
     const tenor = parseInt(document.getElementById('tenor').value);
+    const netRate = parseFloat(document.getElementById('netRate').value);
 
     if (isNaN(otr) || isNaN(dp) || otr <= 0 || dp <= 0 || dp >= otr) {
       alert("Masukkan OTR dan DP yang valid.");
@@ -135,24 +133,31 @@
 
     const pokok = otr - dp;
 
-    const faktor = {
-      11: 0.10701,
-      17: 0.07522,
-      23: 0.05882,
-      29: 0.05013,
-      35: 0.04466
+    // Semua kombinasi netRate & tenor diperbolehkan jika faktor tersedia
+    const faktorMap = {
+      "24": {11: 0.11234, 17: 0.08001, 23: 0.05882, 29: 0.05013, 35: 0.04466},
+      "24.5": {11: 0.11422, 17: 0.08150, 23: 0.06006, 29: 0.05123, 35: 0.04583},
+      "25": {11: 0.11611, 17: 0.08299, 23: 0.06129, 29: 0.05232, 35: 0.04699},
+      "25.5": {11: 0.11800, 17: 0.08448, 23: 0.06253, 29: 0.05342, 35: 0.04816},
+      "26": {11: 0.12000, 17: 0.08600, 23: 0.06377, 29: 0.05452, 35: 0.04933},
+      "26.5": {11: 0.12189, 17: 0.08749, 23: 0.06501, 29: 0.05562, 35: 0.05049},
+      "27": {11: 0.12378, 17: 0.08898, 23: 0.06624, 29: 0.05671, 35: 0.05166},
+      "27.5": {11: 0.12566, 17: 0.09047, 23: 0.06748, 29: 0.05781, 35: 0.05283},
+      "28": {11: 0.12755, 17: 0.09196, 23: 0.06872, 29: 0.05891, 35: 0.05399}
     };
 
-    if (!faktor[tenor]) {
-      document.getElementById("result").innerHTML = "Faktor untuk tenor tersebut belum tersedia.";
+    let faktor = 0;
+    if (faktorMap[netRate] && faktorMap[netRate][tenor]) {
+      faktor = faktorMap[netRate][tenor];
+    } else {
+      alert("Faktor belum tersedia untuk Net Rate " + netRate + "% dan Tenor " + tenor + " bulan.");
       return;
     }
 
-    const angsuran = bulat5000(pokok * faktor[tenor]);
+    const angsuran = bulat5000(pokok * faktor);
     const totalCicilan = angsuran * tenor;
     const totalBayar = totalCicilan + dp;
 
-    // Max TAC berdasarkan kisaran angsuran
     let maxTac = 0;
     if (tenor === 11 && angsuran >= 1660000 && angsuran <= 1670000) {
       maxTac = 350000;
