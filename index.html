@@ -3,24 +3,71 @@
 <head>
   <meta charset="UTF-8">
   <title>Kalkulator Kredit CMS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 20px; }
-    label, select, input { display: block; margin-bottom: 10px; width: 100%; }
-    input, select { padding: 8px; }
-    button {
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f0f4f8;
+      max-width: 550px;
+      margin: 40px auto;
+      padding: 30px;
+      border-radius: 10px;
+      background: white;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #007BFF;
+      border-bottom: 2px solid #007BFF;
+      padding-bottom: 10px;
+      margin-bottom: 30px;
+    }
+
+    label {
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    input, select {
       padding: 10px;
-      background: #007BFF;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-top: 5px;
+      margin-bottom: 20px;
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 15px;
+    }
+
+    button {
+      padding: 12px;
+      background: #28a745;
       color: white;
       border: none;
+      border-radius: 6px;
       width: 100%;
       font-size: 16px;
+      font-weight: 600;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
+
+    button:hover {
+      background: #218838;
+    }
+
     #result {
-      margin-top: 20px;
-      padding: 15px;
-      background: #f1f1f1;
-      border: 1px solid #ccc;
+      margin-top: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-left: 5px solid #007BFF;
+      border-radius: 8px;
+      line-height: 1.8;
+    }
+
+    strong {
+      color: #333;
     }
   </style>
 </head>
@@ -64,7 +111,7 @@ function hitungAngsuran() {
 
   const pokok = otr - dp;
 
-  // Faktor bunga yang disesuaikan dengan data real
+  // Faktor bunga real per tenor
   const faktor = {
     11: 0.10701,
     17: 0.07522,
@@ -72,6 +119,9 @@ function hitungAngsuran() {
     29: 0.05013,
     35: 0.04466
   };
+
+  // Max TAC % tetap (bisa disesuaikan jika berbeda per tenor)
+  const maxTACpersen = 0.175;
 
   if (!faktor[tenor]) {
     document.getElementById("result").innerHTML = "Faktor untuk tenor tersebut belum tersedia.";
@@ -81,13 +131,15 @@ function hitungAngsuran() {
   const angsuran = bulat5000(pokok * faktor[tenor]);
   const totalCicilan = angsuran * tenor;
   const totalBayar = totalCicilan + dp;
+  const maxTAC = pokok * maxTACpersen;
 
   document.getElementById("result").innerHTML = `
     <strong>Hasil Simulasi:</strong><br>
     Pokok Kredit: Rp${pokok.toLocaleString()}<br>
     Angsuran / bulan: <strong>Rp${angsuran.toLocaleString()}</strong><br>
     Total Cicilan: Rp${totalCicilan.toLocaleString()}<br>
-    Total Bayar (DP + Cicilan): Rp${totalBayar.toLocaleString()}
+    Total Bayar (DP + Cicilan): Rp${totalBayar.toLocaleString()}<br>
+    Max TAC (Rp): <strong>Rp${maxTAC.toLocaleString(undefined, { maximumFractionDigits: 0 })}</strong>
   `;
 }
 </script>
