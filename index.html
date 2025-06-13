@@ -2,51 +2,74 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Kalkulator Kredit CMS</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 500px;
-      margin: auto;
-      padding: 20px;
-      background: #f8f9fa;
+    * {
+      box-sizing: border-box;
     }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 30px auto;
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
     h2 {
       text-align: center;
       color: #007BFF;
+      margin-bottom: 25px;
     }
+
     label {
-      font-weight: bold;
-      margin-top: 10px;
+      font-weight: 600;
+      margin-bottom: 5px;
+      display: block;
     }
+
     input, select {
       width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 14px;
-    }
-    button {
       padding: 12px;
-      background: #007BFF;
-      color: white;
-      border: none;
-      width: 100%;
+      margin-bottom: 15px;
       font-size: 16px;
-      border-radius: 5px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      background-color: #007BFF;
+      color: white;
+      padding: 14px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
+
     button:hover {
-      background: #0056b3;
+      background-color: #0056b3;
     }
+
     #result {
       margin-top: 20px;
+      background: #f8f9fa;
+      border: 1px solid #ddd;
+      border-radius: 6px;
       padding: 15px;
-      background: #fff;
-      border: 1px solid #ccc;
-      border-radius: 5px;
     }
+
     strong {
       color: #333;
     }
@@ -54,13 +77,14 @@
 </head>
 <body>
 
+<div class="container">
   <h2>Kalkulator Kredit CMS</h2>
 
   <label for="otr">Harga OTR (Rp):</label>
-  <input type="number" id="otr" placeholder="20560000" value="20560000">
+  <input type="text" id="otr" placeholder="20.560.000" value="20.560.000" oninput="formatRupiah(this)">
 
   <label for="dp">DP Price List (Rp):</label>
-  <input type="number" id="dp" placeholder="5000000" value="5000000">
+  <input type="text" id="dp" placeholder="5.000.000" value="5.000.000" oninput="formatRupiah(this)">
 
   <label for="tenor">Pilih Tenor (bulan):</label>
   <select id="tenor">
@@ -74,60 +98,78 @@
   <button onclick="hitungAngsuran()">Hitung Angsuran</button>
 
   <div id="result"></div>
+</div>
 
-  <script>
-    function bulat5000(nilai) {
-      return Math.ceil(nilai / 5000) * 5000;
+<script>
+  // Format input angka ke format Rp
+  function formatRupiah(input) {
+    let value = input.value.replace(/\D/g, "");
+    let formatted = "";
+    let length = value.length;
+
+    for (let i = length - 1, j = 1; i >= 0; i--, j++) {
+      formatted = value[i] + formatted;
+      if (j % 3 === 0 && i !== 0) formatted = "." + formatted;
     }
 
-    function hitungAngsuran() {
-      const otr = parseFloat(document.getElementById('otr').value);
-      const dp = parseFloat(document.getElementById('dp').value);
-      const tenor = parseInt(document.getElementById('tenor').value);
+    input.value = formatted;
+  }
 
-      if (isNaN(otr) || isNaN(dp) || otr <= 0 || dp <= 0 || dp >= otr) {
-        alert("Masukkan OTR dan DP yang valid.");
-        return;
-      }
+  function unformatRupiah(str) {
+    return parseInt(str.replace(/\./g, ""));
+  }
 
-      const pokok = otr - dp;
+  function bulat5000(nilai) {
+    return Math.ceil(nilai / 5000) * 5000;
+  }
 
-      // Faktor bunga real
-      const faktor = {
-        11: 0.10701,
-        17: 0.07522,
-        23: 0.05882,
-        29: 0.05013,
-        35: 0.04466
-      };
+  function hitungAngsuran() {
+    const otr = unformatRupiah(document.getElementById('otr').value);
+    const dp = unformatRupiah(document.getElementById('dp').value);
+    const tenor = parseInt(document.getElementById('tenor').value);
 
-      if (!faktor[tenor]) {
-        document.getElementById("result").innerHTML = "Faktor untuk tenor tersebut belum tersedia.";
-        return;
-      }
-
-      const angsuran = bulat5000(pokok * faktor[tenor]);
-      const totalCicilan = angsuran * tenor;
-      const totalBayar = totalCicilan + dp;
-
-      // Max TAC berdasarkan kisaran angsuran real
-      let maxTac = 0;
-      if (tenor === 11 && angsuran >= 1660000 && angsuran <= 1670000) {
-        maxTac = 350000;
-      } else if (tenor === 35 && angsuran >= 690000 && angsuran <= 700000) {
-        maxTac = 1400000;
-      }
-
-      document.getElementById("result").innerHTML = `
-        <strong>Hasil Simulasi:</strong><br>
-        Pokok Kredit: Rp${pokok.toLocaleString()}<br>
-        Angsuran / bulan: <strong>Rp${angsuran.toLocaleString()}</strong><br>
-        Total Cicilan: Rp${totalCicilan.toLocaleString()}<br>
-        Total Bayar (DP + Cicilan): Rp${totalBayar.toLocaleString()}<br>
-        Max TAC (Rp): <strong>Rp${maxTac.toLocaleString()}</strong>
-      `;
+    if (isNaN(otr) || isNaN(dp) || otr <= 0 || dp <= 0 || dp >= otr) {
+      alert("Masukkan OTR dan DP yang valid.");
+      return;
     }
-  </script>
+
+    const pokok = otr - dp;
+
+    const faktor = {
+      11: 0.10701,
+      17: 0.07522,
+      23: 0.05882,
+      29: 0.05013,
+      35: 0.04466
+    };
+
+    if (!faktor[tenor]) {
+      document.getElementById("result").innerHTML = "Faktor untuk tenor tersebut belum tersedia.";
+      return;
+    }
+
+    const angsuran = bulat5000(pokok * faktor[tenor]);
+    const totalCicilan = angsuran * tenor;
+    const totalBayar = totalCicilan + dp;
+
+    // Max TAC berdasarkan kisaran angsuran
+    let maxTac = 0;
+    if (tenor === 11 && angsuran >= 1660000 && angsuran <= 1670000) {
+      maxTac = 350000;
+    } else if (tenor === 35 && angsuran >= 690000 && angsuran <= 700000) {
+      maxTac = 1400000;
+    }
+
+    document.getElementById("result").innerHTML = `
+      <strong>Hasil Simulasi:</strong><br>
+      Pokok Kredit: Rp${pokok.toLocaleString("id-ID")}<br>
+      Angsuran / bulan: <strong>Rp${angsuran.toLocaleString("id-ID")}</strong><br>
+      Total Cicilan: Rp${totalCicilan.toLocaleString("id-ID")}<br>
+      Total Bayar (DP + Cicilan): Rp${totalBayar.toLocaleString("id-ID")}<br>
+      Max TAC (Rp): <strong>Rp${maxTac.toLocaleString("id-ID")}</strong>
+    `;
+  }
+</script>
 
 </body>
 </html>
