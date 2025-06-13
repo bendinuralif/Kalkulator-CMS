@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Kalkulator Kredit CMS</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 20px; }
+    label, select, input { display: block; margin-bottom: 10px; width: 100%; }
+    input, select { padding: 8px; }
+    button {
+      padding: 10px;
+      background: #007BFF;
+      color: white;
+      border: none;
+      width: 100%;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f1f1f1;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Kalkulator Kredit CMS</h2>
+
+<label for="otr">Harga OTR (Rp):</label>
+<input type="number" id="otr" placeholder="20560000">
+
+<label for="dp">DP Price List (Rp):</label>
+<input type="number" id="dp" placeholder="5000000">
+
+<label for="tenor">Pilih Tenor (bulan):</label>
+<select id="tenor">
+  <option value="11">11</option>
+  <option value="17">17</option>
+  <option value="23">23</option>
+  <option value="29">29</option>
+  <option value="35" selected>35</option>
+</select>
+
+<button onclick="hitungAngsuran()">Hitung Angsuran</button>
+
+<div id="result"></div>
+
+<script>
+function bulat5000(nilai) {
+  return Math.ceil(nilai / 5000) * 5000;
+}
+
+function hitungAngsuran() {
+  const otr = parseFloat(document.getElementById('otr').value);
+  const dp = parseFloat(document.getElementById('dp').value);
+  const tenor = parseInt(document.getElementById('tenor').value);
+
+  if (isNaN(otr) || isNaN(dp) || otr <= 0 || dp <= 0 || dp >= otr) {
+    alert("Masukkan OTR dan DP yang valid.");
+    return;
+  }
+
+  const pokok = otr - dp;
+
+  // Faktor bunga per tenor berdasarkan data real angsuran
+  const faktor = {
+    17: 0.07522,
+    23: 0.05882,
+    29: 0.05013,
+    35: 0.10703,
+    11: 0.09200 // Estimasi (jika dapat nilai real, tinggal diganti)
+  };
+
+  if (!faktor[tenor]) {
+    document.getElementById("result").innerHTML = "Faktor untuk tenor tersebut belum tersedia.";
+    return;
+  }
+
+  const angsuran = bulat5000(pokok * faktor[tenor]);
+  const totalCicilan = angsuran * tenor;
+  const totalBayar = totalCicilan + dp;
+
+  document.getElementById("result").innerHTML = `
+    <strong>Hasil Simulasi:</strong><br>
+    Pokok Kredit: Rp${pokok.toLocaleString()}<br>
+    Angsuran / bulan: <strong>Rp${angsuran.toLocaleString()}</strong><br>
+    Total Cicilan: Rp${totalCicilan.toLocaleString()}<br>
+    Total Bayar (DP + Cicilan): Rp${totalBayar.toLocaleString()}
+  `;
+}
+</script>
+
+</body>
+</html>
