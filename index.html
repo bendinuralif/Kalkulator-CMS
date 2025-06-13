@@ -77,6 +77,10 @@ function unformat(str) {
   return parseInt(str.replace(/\./g, '')) || 0;
 }
 
+function bulat5000(nilai) {
+  return Math.ceil(nilai / 5000) * 5000;
+}
+
 function hitungAngsuran() {
   const otr = unformat(document.getElementById('otr').value);
   const dp = unformat(document.getElementById('dp').value);
@@ -96,7 +100,7 @@ function hitungAngsuran() {
   }[tenor];
 
   const pokok = otr - dp;
-  const tingkatBunga = netRate; // karena jumlah angsuran = tenor (bulanan)
+  const tingkatBunga = netRate;
   const bunga = pokok * tingkatBunga;
   const administrasi = 250000;
   const premiAsuransi = otr * 0.0061;
@@ -104,7 +108,7 @@ function hitungAngsuran() {
   const pendapatan = bunga + administrasi + pendapatanAsuransi;
   const maxTac = Math.floor((pendapatan * 0.175) / 1000) * 1000;
 
-  const angsuran = Math.ceil(bunga / tenor / 5000) * 5000;
+  const angsuran = bulat5000((pokok + bunga) / tenor);
   const totalCicilan = angsuran * tenor;
   const totalBayar = totalCicilan + dp;
 
