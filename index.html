@@ -81,53 +81,52 @@
     }
 
     function hitungAngsuran() {
-  const otr = parseFloat(document.getElementById('otr').value);
-  const dp = parseFloat(document.getElementById('dp').value);
-  const tenor = parseInt(document.getElementById('tenor').value);
+      const otr = parseFloat(document.getElementById('otr').value);
+      const dp = parseFloat(document.getElementById('dp').value);
+      const tenor = parseInt(document.getElementById('tenor').value);
 
-  if (isNaN(otr) || isNaN(dp) || otr <= 0 || dp <= 0 || dp >= otr) {
-    alert("Masukkan OTR dan DP yang valid.");
-    return;
-  }
+      if (isNaN(otr) || isNaN(dp) || otr <= 0 || dp <= 0 || dp >= otr) {
+        alert("Masukkan OTR dan DP yang valid.");
+        return;
+      }
 
-  const pokok = otr - dp;
+      const pokok = otr - dp;
 
-  // Faktor bunga real
-  const faktor = {
-    11: 0.10701,
-    17: 0.07522,
-    23: 0.05882,
-    29: 0.05013,
-    35: 0.04466
-  };
+      // Faktor bunga real
+      const faktor = {
+        11: 0.10701,
+        17: 0.07522,
+        23: 0.05882,
+        29: 0.05013,
+        35: 0.04466
+      };
 
-  if (!faktor[tenor]) {
-    document.getElementById("result").innerHTML = "Faktor untuk tenor tersebut belum tersedia.";
-    return;
-  }
+      if (!faktor[tenor]) {
+        document.getElementById("result").innerHTML = "Faktor untuk tenor tersebut belum tersedia.";
+        return;
+      }
 
-  const angsuran = bulat5000(pokok * faktor[tenor]);
-  const totalCicilan = angsuran * tenor;
-  const totalBayar = totalCicilan + dp;
+      const angsuran = bulat5000(pokok * faktor[tenor]);
+      const totalCicilan = angsuran * tenor;
+      const totalBayar = totalCicilan + dp;
 
-  // Tentukan Max TAC berdasarkan kisaran angsuran
-  let maxTac = 0;
-  if (tenor === 11 && angsuran >= 1660000 && angsuran <= 1670000) {
-    maxTac = 350000;
-  } else if (tenor === 35 && angsuran >= 690000 && angsuran <= 700000) {
-    maxTac = 1400000;
-  }
+      // Max TAC berdasarkan kisaran angsuran real
+      let maxTac = 0;
+      if (tenor === 11 && angsuran >= 1660000 && angsuran <= 1670000) {
+        maxTac = 350000;
+      } else if (tenor === 35 && angsuran >= 690000 && angsuran <= 700000) {
+        maxTac = 1400000;
+      }
 
-  document.getElementById("result").innerHTML = `
-    <strong>Hasil Simulasi:</strong><br>
-    Pokok Kredit: Rp${pokok.toLocaleString()}<br>
-    Angsuran / bulan: <strong>Rp${angsuran.toLocaleString()}</strong><br>
-    Total Cicilan: Rp${totalCicilan.toLocaleString()}<br>
-    Total Bayar (DP + Cicilan): Rp${totalBayar.toLocaleString()}<br>
-    Max TAC (Rp): <strong>Rp${maxTac.toLocaleString()}</strong>
-  `;
-}
-
+      document.getElementById("result").innerHTML = `
+        <strong>Hasil Simulasi:</strong><br>
+        Pokok Kredit: Rp${pokok.toLocaleString()}<br>
+        Angsuran / bulan: <strong>Rp${angsuran.toLocaleString()}</strong><br>
+        Total Cicilan: Rp${totalCicilan.toLocaleString()}<br>
+        Total Bayar (DP + Cicilan): Rp${totalBayar.toLocaleString()}<br>
+        Max TAC (Rp): <strong>Rp${maxTac.toLocaleString()}</strong>
+      `;
+    }
   </script>
 
 </body>
