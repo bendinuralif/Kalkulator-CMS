@@ -120,8 +120,14 @@ function hitungAngsuran() {
     35: 0.04466
   };
 
-  // Max TAC % tetap (bisa disesuaikan jika berbeda per tenor)
-  const maxTACpersen = 0.175;
+  // Max TAC (Rp) berdasarkan tenor (data real dari gambar)
+  const maxTACRp = {
+    11: 400000,
+    17: 1000000, // asumsi, bisa diganti kalau ada data real
+    23: 1100000,
+    29: 1200000,
+    35: 1400000
+  };
 
   if (!faktor[tenor]) {
     document.getElementById("result").innerHTML = "Faktor untuk tenor tersebut belum tersedia.";
@@ -131,7 +137,8 @@ function hitungAngsuran() {
   const angsuran = bulat5000(pokok * faktor[tenor]);
   const totalCicilan = angsuran * tenor;
   const totalBayar = totalCicilan + dp;
-  const maxTAC = pokok * maxTACpersen;
+
+  const tac = maxTACRp[tenor] || 0;
 
   document.getElementById("result").innerHTML = `
     <strong>Hasil Simulasi:</strong><br>
@@ -139,10 +146,11 @@ function hitungAngsuran() {
     Angsuran / bulan: <strong>Rp${angsuran.toLocaleString()}</strong><br>
     Total Cicilan: Rp${totalCicilan.toLocaleString()}<br>
     Total Bayar (DP + Cicilan): Rp${totalBayar.toLocaleString()}<br>
-    Max TAC (Rp): <strong>Rp${maxTAC.toLocaleString(undefined, { maximumFractionDigits: 0 })}</strong>
+    Max TAC (Rp): <strong>Rp${tac.toLocaleString()}</strong>
   `;
 }
 </script>
+
 
 </body>
 </html>
